@@ -1,0 +1,120 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper: user is authenticated and belongs to the shop
+    function isInShop(shopId) {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/barbearias/$(shopId)/usuarios/$(request.auth.uid))
+        && get(/databases/$(database)/documents/barbearias/$(shopId)/usuarios/$(request.auth.uid)).data.revoked != true
+        && get(/databases/$(database)/documents/barbearias/$(shopId)/usuarios/$(request.auth.uid)).data.ativo == true;
+    }
+
+    function isAdmin(shopId) {
+      return isInShop(shopId)
+        && get(/databases/$(database)/documents/barbearias/$(shopId)/usuarios/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    function isBarbeiro(shopId) {
+      return isInShop(shopId)
+        && get(/databases/$(database)/documents/barbearias/$(shopId)/usuarios/$(request.auth.uid)).data.role == 'barbeiro';
+    }
+
+    // Bootstrap: allow creating the first admin when no users exist yet
+    function isBootstrapAdmin(shopId) {
+      return request.auth != null
+        && !exists(/databases/$(database)/documents/barbearias/$(shopId)/usuarios/$(request.auth.uid))
+        && request.resource.data.role == 'admin';
+    }
+
+    match /barbearias/{shopId} {
+      allow read: if isInShop(shopId);
+      allow create: if request.auth != null;
+      allow update, delete: if isAdmin(shopId);
+
+      match /usuarios/{userId} {
+        allow read: if isInShop(shopId);
+        allow create: if isAdmin(shopId) || isBootstrapAdmin(shopId);
+        allow update: if isAdmin(shopId) || request.auth.uid == userId;
+        allow delete: if isAdmin(shopId);
+      }
+
+      match /clientes/{clienteId} {
+        allow read: if isInShop(shopId);
+        allow create, update: if isInShop(shopId)
+          && !(request.resource.data.diff(resource.data).affectedKeys()
+            .hasAny(['total_gasto', 'total_atendimentos', 'pontos_fidelidade']) && isBarbeiro(shopId));
+        allow delete: if isAdmin(shopId);
+      }
+
+      match /servicos/{servicoId} {
+        allow read: if isInShop(shopId);
+        allow create, update, delete: if isAdmin(shopId);
+      }
+
+      match /produtos/{produtoId} {
+        allow read: if isInShop(shopId);
+        allow create, update: if isAdmin(shopId)
+          && !(request.resource.data.diff(resource.data).affectedKeys()
+            .hasAny(['preco_venda', 'estoque_minimo']) && isBarbeiro(shopId));
+        allow delete: if isAdmin(shopId);
+      }
+
+      match /fornecedores/{id} {
+        allow read: if isInShop(shopId);
+        allow write: if isAdmin(shopId);
+      }
+
+      match /atendimentos/{id} {
+        allow read: if isInShop(shopId);
+        allow create: if isInShop(shopId);
+        allow update, delete: if isAdmin(shopId);
+      }
+
+      match /agendamentos/{id} {
+        allow read: if isInShop(shopId);
+        allow create, update: if isInShop(shopId);
+        allow delete: if isAdmin(shopId);
+      }
+
+      match /despesas/{id} {
+        allow read, write: if isAdmin(shopId);
+      }
+
+      match /movimentos_estoque/{id} {
+        allow read: if isInShop(shopId);
+        allow create: if isInShop(shopId);
+        allow update, delete: if isAdmin(shopId);
+      }
+
+      match /caixas/{id} {
+        allow read, write: if isAdmin(shopId);
+      }
+
+      match /comandas/{id} {
+        allow read: if isInShop(shopId)
+          && (isAdmin(shopId) || resource.data.barbeiro_id == request.auth.uid);
+        allow create, update: if isInShop(shopId)
+          && (isAdmin(shopId) || resource.data.barbeiro_id == request.auth.uid);
+        allow delete: if isAdmin(shopId);
+      }
+
+      match /comandas_itens/{id} {
+        allow read, write: if isInShop(shopId);
+      }
+
+      match /comissoes/{id} {
+        allow read: if isInShop(shopId)
+          && (isAdmin(shopId) || resource.data.barbeiro_id == request.auth.uid);
+        allow create: if isInShop(shopId);
+        allow update: if isAdmin(shopId);
+        allow delete: if isAdmin(shopId);
+      }
+
+      match /assinaturas/{id} {
+        allow read: if isInShop(shopId);
+        allow write: if isAdmin(shopId);
+      }
+    }
+  }
+}

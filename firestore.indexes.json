@@ -1,0 +1,74 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "comandas",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "barbearia_id", "order": "ASCENDING"},
+        {"fieldPath": "status", "order": "ASCENDING"},
+        {"fieldPath": "data_fechamento", "order": "DESCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "comandas",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "barbeiro_id", "order": "ASCENDING"},
+        {"fieldPath": "status", "order": "ASCENDING"},
+        {"fieldPath": "data_abertura", "order": "DESCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "agendamentos",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "barbearia_id", "order": "ASCENDING"},
+        {"fieldPath": "barbeiro_id", "order": "ASCENDING"},
+        {"fieldPath": "data_hora_inicio", "order": "ASCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "atendimentos",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "barbearia_id", "order": "ASCENDING"},
+        {"fieldPath": "data_hora", "order": "DESCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "clientes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "barbearia_id", "order": "ASCENDING"},
+        {"fieldPath": "total_gasto", "order": "DESCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "assinaturas",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "barbearia_id", "order": "ASCENDING"},
+        {"fieldPath": "status", "order": "ASCENDING"},
+        {"fieldPath": "data_vencimento", "order": "ASCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "comissoes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "barbearia_id", "order": "ASCENDING"},
+        {"fieldPath": "barbeiro_id", "order": "ASCENDING"},
+        {"fieldPath": "pago", "order": "ASCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "despesas",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "barbearia_id", "order": "ASCENDING"},
+        {"fieldPath": "data", "order": "DESCENDING"}
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}
