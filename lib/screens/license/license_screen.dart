@@ -107,7 +107,7 @@ class _LicenseScreenState extends State<LicenseScreen> {
                           border: Border.all(color: Colors.red.shade300),
                         ),
                         child: Text(
-                          _error!,
+                          _error ?? '',
                           style: TextStyle(color: Colors.red.shade700),
                         ),
                       ),

@@ -65,7 +65,9 @@ class DatabaseHelper {
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
     await db.execute('PRAGMA foreign_keys = ON');
-    // Future migrations applied incrementally here
+    if (oldVersion < 2) {
+      await addColumnIfMissing(db, 'usuarios', 'senha_hash', 'TEXT');
+    }
   }
 
   Future<void> _createSchema(Database db) async {
@@ -81,7 +83,8 @@ class DatabaseHelper {
         ativo INTEGER NOT NULL DEFAULT 1,
         revoked INTEGER NOT NULL DEFAULT 0,
         barbearia_id TEXT NOT NULL,
-        firebase_id TEXT UNIQUE
+        firebase_id TEXT UNIQUE,
+        senha_hash TEXT
       )
     ''');
 

@@ -33,6 +33,7 @@ class _AdminSetupScreenState extends State<AdminSetupScreen> {
   Future<void> _loadBarbeariaId() async {
     final license = context.read<LicenseService>();
     final key = await license.getKey();
+    if (!mounted) return;
     setState(() => _barbeariaId = key);
   }
 

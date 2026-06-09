@@ -63,6 +63,7 @@ class _EstoqueScreenState extends State<EstoqueScreen> with SingleTickerProvider
       isScrollControlled: true,
       builder: (_) => _EntradaEstoqueForm(produtos: produtos),
     ).then((_) {
+      if (!mounted) return;
       context.read<ProdutoController>().carregar();
       _loadMovimentos();
     });

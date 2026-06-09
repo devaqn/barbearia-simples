@@ -61,29 +61,42 @@ import 'services/session_manager.dart';
 import 'utils/app_routes.dart';
 import 'utils/app_theme.dart';
 
+// Compile-time check for Firebase credentials
+const _firebaseAppId = String.fromEnvironment('FIREBASE_APP_ID');
+const _firebaseProjectId = String.fromEnvironment('FIREBASE_PROJECT_ID');
+const _hasFirebaseConfig = _firebaseAppId != '' && _firebaseProjectId != '';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   bool firebaseReady = false;
-  try {
-    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  if (_hasFirebaseConfig) {
+    try {
+      await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-    await FirebaseAppCheck.instance.activate(
-      androidProvider: kDebugMode ? AndroidProvider.debug : AndroidProvider.playIntegrity,
-    );
+      await FirebaseAppCheck.instance.activate(
+        androidProvider: kDebugMode ? AndroidProvider.debug : AndroidProvider.playIntegrity,
+      );
 
-    FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
-    PlatformDispatcher.instance.onError = (error, stack) {
-      FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
-      return true;
-    };
-    firebaseReady = true;
-  } catch (e) {
-    if (kDebugMode) debugPrint('[main] Firebase init failed (offline mode): $e');
+      FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
+      PlatformDispatcher.instance.onError = (error, stack) {
+        FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+        return true;
+      };
+      firebaseReady = true;
+    } catch (e) {
+      if (kDebugMode) debugPrint('[main] Firebase init failed (offline mode): $e');
+    }
+  } else {
+    if (kDebugMode) debugPrint('[main] Firebase credentials not configured — running offline.');
   }
 
   final db = DatabaseHelper.instance;
-  await db.database;
+  try {
+    await db.database;
+  } catch (e, st) {
+    if (kDebugMode) debugPrint('[main] DB init error: $e\n$st');
+  }
 
   final conn = ConnectivityService();
   final ctx = FirebaseContextService();
@@ -114,7 +127,12 @@ void main() async {
     if (conn.isOnline) realtimeSync.startListening();
   }
 
-  final isActivated = await license.isActivated();
+  bool isActivated = false;
+  try {
+    isActivated = await license.isActivated();
+  } catch (e) {
+    if (kDebugMode) debugPrint('[main] License check error: $e');
+  }
   final initialRoute = isActivated ? AppRoutes.login : AppRoutes.license;
 
   runApp(

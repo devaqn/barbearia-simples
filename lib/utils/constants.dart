@@ -6,7 +6,7 @@ abstract class AppConstants {
 
   // SQLite
   static const String dbName = 'barberos.db';
-  static const int dbVersion = 1;
+  static const int dbVersion = 2;
 
   // Firestore collections
   static const String colBarbearias = 'barbearias';

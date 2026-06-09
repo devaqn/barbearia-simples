@@ -45,13 +45,13 @@ class _CaixaScreenState extends State<CaixaScreen> {
 
   Future<void> _abrirCaixa() async {
     final saldoStr = await UiHelpers.showInputDialog(context, title: 'Saldo inicial', hint: 'Ex: 100,00', initialValue: '0');
-    if (saldoStr == null) return;
+    if (saldoStr == null || !mounted) return;
     final saldo = double.tryParse(saldoStr.replaceAll(',', '.')) ?? 0.0;
     try {
       final session = context.read<SessionManager>();
       final svc = context.read<CaixaService>();
       await svc.abrirCaixa(barbeiroId: session.userId!, saldoInicial: saldo, barbeariaId: session.barbeariaId);
-      UiHelpers.showSuccess(context, 'Caixa aberto!');
+      if (mounted) UiHelpers.showSuccess(context, 'Caixa aberto!');
       await _load();
     } catch (e) {
       if (mounted) UiHelpers.showError(context, e.toString());
@@ -60,7 +60,7 @@ class _CaixaScreenState extends State<CaixaScreen> {
 
   Future<void> _fecharCaixa() async {
     final ok = await UiHelpers.showConfirmDialog(context, title: 'Fechar Caixa', message: 'Confirmar fechamento do caixa?', confirmLabel: 'Fechar');
-    if (ok != true) return;
+    if (ok != true || !mounted) return;
     final svc = context.read<CaixaService>();
     try {
       final totFaturado = (_totais['total_faturado'] as num?)?.toDouble() ?? 0.0;

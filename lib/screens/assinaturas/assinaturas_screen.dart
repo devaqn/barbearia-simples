@@ -81,7 +81,7 @@ class _AssinaturasScreenState extends State<AssinaturasScreen> {
                               context, title: 'Cancelar Assinatura', message: 'Confirmar cancelamento?',
                               confirmLabel: 'Cancelar', destructive: true,
                             );
-                            if (ok == true) {
+                            if (ok == true && mounted) {
                               await context.read<AssinaturaService>().cancelar(_assinaturas[i].id!);
                               await _load();
                             }

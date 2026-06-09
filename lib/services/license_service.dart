@@ -42,7 +42,8 @@ class LicenseService {
   }
 
   bool _validate(String key) {
-    if (AppConfig.licenseHash.isEmpty) return false;
+    // Dev/offline mode: accept any key when LICENSE_HASH is not configured
+    if (AppConfig.licenseHash.isEmpty) return true;
     final salt = AppConfig.licenseSalt;
     final combined = utf8.encode('$key$salt');
     final hash = sha256.convert(combined).toString();

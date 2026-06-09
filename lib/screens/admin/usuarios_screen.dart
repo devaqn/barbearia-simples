@@ -43,13 +43,38 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
     }
   }
 
+  int get _barbeirosCount => _usuarios.where((u) => !u.isAdmin).length;
+  bool get _atLimit => _barbeirosCount >= 5;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Usuários')),
+      appBar: AppBar(
+        title: const Text('Usuários'),
+        actions: [
+          if (!_loading)
+            Padding(
+              padding: const EdgeInsets.only(right: 16),
+              child: Chip(
+                avatar: Icon(
+                  _atLimit ? Icons.lock : Icons.people,
+                  size: 16,
+                  color: _atLimit ? Colors.red : null,
+                ),
+                label: Text(
+                  '$_barbeirosCount/5 barbeiros',
+                  style: TextStyle(
+                    color: _atLimit ? Colors.red : null,
+                    fontWeight: _atLimit ? FontWeight.bold : null,
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
       drawer: const AppDrawer(),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _showCriarBarbeiro(),
+        onPressed: _showCriarBarbeiro,
         child: const Icon(Icons.person_add),
       ),
       body: _loading
@@ -76,6 +101,10 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
   }
 
   void _showCriarBarbeiro() {
+    if (_atLimit) {
+      UiHelpers.showError(context, 'Limite de 5 barbeiros atingido. Desative um para adicionar outro.');
+      return;
+    }
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,

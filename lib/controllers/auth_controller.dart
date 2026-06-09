@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import '../services/auth_service.dart';
+import '../services/service_exceptions.dart';
 import '../services/session_manager.dart';
 import 'controller_mixin.dart';
 
@@ -10,12 +11,14 @@ class AuthController extends ChangeNotifier with ControllerMixin {
   AuthController(this._authSvc, this._session);
 
   Future<bool> login(String email, String password) async {
-    final user = await runSilent(() => _authSvc.signIn(email, password));
+    final user = await runSilent(() async {
+      final u = await _authSvc.signIn(email, password);
+      if (u != null && u.revoked) {
+        throw const ServiceException('Conta desativada. Contate o administrador.');
+      }
+      return u;
+    });
     if (user == null) return false;
-    if (user.revoked) {
-      errorMsg;
-      return false;
-    }
     _session.setUser(user);
     return true;
   }
@@ -62,7 +65,7 @@ class AuthController extends ChangeNotifier with ControllerMixin {
   }
 
   Future<bool> changePassword(String newPassword) async {
-    await runSilent(() => _authSvc.changePassword(newPassword));
+    await runSilent(() => _authSvc.changePassword(newPassword, localUserId: _session.userId));
     return errorMsg == null;
   }
 }

@@ -12,8 +12,12 @@ class ConnectivityService extends ChangeNotifier {
   }
 
   Future<void> _init() async {
-    final result = await _connectivity.checkConnectivity();
-    _update(result);
+    try {
+      final result = await _connectivity.checkConnectivity();
+      _update(result);
+    } catch (e) {
+      if (kDebugMode) debugPrint('[Connectivity] Init error: $e');
+    }
     _connectivity.onConnectivityChanged.listen(_update);
   }
 
