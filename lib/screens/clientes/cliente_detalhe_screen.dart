@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../controllers/atendimento_controller.dart';
 import '../../controllers/cliente_controller.dart';
+import '../../models/agendamento.dart';
 import '../../models/atendimento.dart';
 import '../../models/cliente.dart';
+import '../../services/whatsapp_service.dart';
 import '../../utils/app_colors.dart';
 import '../../utils/app_routes.dart';
 import '../../utils/formatters.dart';
@@ -98,6 +100,8 @@ class _ClienteDetalheScreenState extends State<ClienteDetalheScreen> {
                 icon: Icons.star_outline,
                 color: Colors.amber,
               ),
+              const SizedBox(height: 16),
+              _WhatsAppActions(cliente: _cliente),
               const SizedBox(height: 20),
               Text('Histórico de atendimentos', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
@@ -159,6 +163,96 @@ class _ProfileCard extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _WhatsAppActions extends StatelessWidget {
+  final Cliente cliente;
+  const _WhatsAppActions({required this.cliente});
+
+  @override
+  Widget build(BuildContext context) {
+    return DsCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.chat, color: Color(0xFF25D366), size: 20),
+              const SizedBox(width: 8),
+              Text('WhatsApp', style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              _whatsBtn(
+                context,
+                label: 'Lembrete',
+                icon: Icons.notifications_outlined,
+                onTap: () {
+                  final uri = WhatsAppService.lembreteAgendamentoUri(
+                    cliente: cliente,
+                    agendamento: _dummyAgendamento(),
+                    servico: null,
+                    barbeiro: null,
+                    nomeBarbearia: 'BarberOS',
+                  );
+                  WhatsAppService.abrirWhatsApp(uri);
+                },
+              ),
+              if (cliente.fazAniversarioHoje)
+                _whatsBtn(
+                  context,
+                  label: 'Aniversário',
+                  icon: Icons.cake_outlined,
+                  onTap: () {
+                    final uri = WhatsAppService.aniversarioUri(
+                      cliente: cliente,
+                      nomeBarbearia: 'BarberOS',
+                    );
+                    WhatsAppService.abrirWhatsApp(uri);
+                  },
+                ),
+              _whatsBtn(
+                context,
+                label: 'Volte sempre',
+                icon: Icons.emoji_people_outlined,
+                onTap: () {
+                  final uri = WhatsAppService.clienteSumidoUri(
+                    cliente: cliente,
+                    nomeBarbearia: 'BarberOS',
+                  );
+                  WhatsAppService.abrirWhatsApp(uri);
+                },
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Agendamento _dummyAgendamento() {
+    final now = DateTime.now().add(const Duration(hours: 1));
+    return Agendamento(
+      clienteId: cliente.id ?? 0,
+      barbeiroId: 0,
+      dataHoraInicio: now,
+      dataHoraFim: now.add(const Duration(minutes: 30)),
+      barbeariaId: cliente.barbeariaId,
+    );
+  }
+
+  Widget _whatsBtn(BuildContext context, {required String label, required IconData icon, required VoidCallback onTap}) {
+    return ActionChip(
+      avatar: Icon(icon, size: 16, color: const Color(0xFF25D366)),
+      label: Text(label),
+      onPressed: onTap,
+      backgroundColor: const Color(0xFF25D366).withValues(alpha: 0.1),
     );
   }
 }

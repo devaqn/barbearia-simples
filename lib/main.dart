@@ -16,8 +16,11 @@ import 'controllers/servico_controller.dart';
 import 'database/database_helper.dart';
 import 'firebase_options.dart';
 import 'screens/admin/admin_setup_screen.dart';
+import 'screens/admin/booking_link_screen.dart';
 import 'screens/admin/dashboard_screen.dart';
 import 'screens/admin/usuarios_screen.dart';
+import 'screens/booking/booking_confirmation_screen.dart';
+import 'screens/booking/booking_screen.dart';
 import 'screens/agenda/agenda_screen.dart';
 import 'screens/agenda/agendamento_form_screen.dart';
 import 'screens/analytics/analytics_screen.dart';
@@ -35,12 +38,18 @@ import 'screens/comanda/comanda_aberta_screen.dart';
 import 'screens/comanda/comandas_screen.dart';
 import 'screens/estoque/estoque_screen.dart';
 import 'screens/financeiro/financeiro_screen.dart';
+import 'screens/avaliacoes/avaliacoes_screen.dart';
+import 'screens/legal/privacidade_screen.dart';
+import 'screens/legal/termos_screen.dart';
 import 'screens/license/license_screen.dart';
+import 'screens/onboarding/onboarding_screen.dart';
 import 'screens/produtos/produtos_screen.dart';
 import 'screens/ranking/ranking_screen.dart';
 import 'screens/relatorios/relatorios_screen.dart';
+import 'screens/settings/notification_settings_screen.dart';
 import 'screens/servicos/servico_form_screen.dart';
 import 'screens/servicos/servicos_screen.dart';
+import 'services/avaliacao_service.dart';
 import 'services/agenda_service.dart';
 import 'services/assinatura_service.dart';
 import 'services/atendimento_service.dart';
@@ -49,6 +58,7 @@ import 'services/caixa_service.dart';
 import 'services/cliente_service.dart';
 import 'services/comanda_service.dart';
 import 'services/connectivity_service.dart';
+import 'services/notification_service.dart';
 import 'services/dashboard_service.dart';
 import 'services/financeiro_service.dart';
 import 'services/firebase_context_service.dart';
@@ -102,6 +112,15 @@ void main() async {
   final ctx = FirebaseContextService();
   final session = SessionManager();
   final license = LicenseService();
+  final notificationSvc = NotificationService();
+
+  if (firebaseReady) {
+    try {
+      await notificationSvc.initialize();
+    } catch (e) {
+      if (kDebugMode) debugPrint('[main] FCM init error: $e');
+    }
+  }
 
   final authSvc = AuthService(ctx);
   final clienteSvc = ClienteService(db, conn, ctx);
@@ -115,6 +134,7 @@ void main() async {
   final dashboardSvc = DashboardService(db);
   final caixaSvc = CaixaService(db);
   final profilePhotoSvc = ProfilePhotoService(db);
+  final avaliacaoSvc = AvaliacaoService(db, conn, ctx);
   final realtimeSync = RealtimeSyncService(db, conn, ctx);
 
   if (firebaseReady) {
@@ -133,13 +153,26 @@ void main() async {
   } catch (e) {
     if (kDebugMode) debugPrint('[main] License check error: $e');
   }
-  final initialRoute = isActivated ? AppRoutes.login : AppRoutes.license;
+
+  String initialRoute;
+  if (!isActivated) {
+    initialRoute = AppRoutes.license;
+  } else {
+    bool onboardingDone = false;
+    try {
+      onboardingDone = await OnboardingScreen.isCompleted();
+    } catch (e) {
+      if (kDebugMode) debugPrint('[main] Onboarding check error: $e');
+    }
+    initialRoute = onboardingDone ? AppRoutes.login : AppRoutes.onboarding;
+  }
 
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider.value(value: conn),
         ChangeNotifierProvider.value(value: session),
+        ChangeNotifierProvider.value(value: notificationSvc),
         Provider.value(value: db),
         Provider.value(value: license),
         Provider.value(value: ctx),
@@ -152,6 +185,7 @@ void main() async {
         Provider.value(value: financeiroSvc),
         Provider.value(value: atendimentoSvc),
         Provider.value(value: profilePhotoSvc),
+        Provider.value(value: avaliacaoSvc),
         Provider.value(value: realtimeSync),
         ChangeNotifierProvider(create: (_) => AuthController(authSvc, session)),
         ChangeNotifierProvider(create: (_) => ClienteController(clienteSvc, session)),
@@ -208,6 +242,16 @@ class BarberOSApp extends StatelessWidget {
         AppRoutes.comandaAberta: (_) => const _AuthGuard(child: ComandaAbertaScreen()),
         AppRoutes.adminUsuarios: (_) => const _AuthGuard(adminOnly: true, child: UsuariosScreen()),
         AppRoutes.perfil: (_) => const _AuthGuard(child: PerfilScreen()),
+        AppRoutes.notificationSettings: (_) => const _AuthGuard(child: NotificationSettingsScreen()),
+        AppRoutes.avaliacoes: (_) => const _AuthGuard(adminOnly: true, child: AvaliacoesScreen()),
+        AppRoutes.onboarding: (_) => const OnboardingScreen(),
+        AppRoutes.termos: (_) => const TermosScreen(),
+        AppRoutes.privacidade: (_) => const PrivacidadeScreen(),
+        // Public booking routes (no auth required)
+        AppRoutes.booking: (_) => const BookingScreen(),
+        AppRoutes.bookingConfirmation: (_) => const BookingConfirmationScreen(),
+        // Admin booking link
+        AppRoutes.bookingLink: (_) => const _AuthGuard(adminOnly: true, child: BookingLinkScreen()),
       },
     );
   }

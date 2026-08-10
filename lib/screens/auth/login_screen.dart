@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../controllers/auth_controller.dart';
+import '../../screens/legal/termos_screen.dart';
 import '../../services/session_manager.dart';
 import '../../utils/app_config.dart';
 import '../../utils/app_routes.dart';
@@ -24,9 +25,22 @@ class _LoginScreenState extends State<LoginScreen> {
     final ctrl = context.read<AuthController>();
     final ok = await ctrl.login(_emailCtrl.text.trim(), _passCtrl.text);
     if (ok && mounted) {
-      final session = context.read<SessionManager>();
-      final route = session.isAdmin ? AppRoutes.dashboard : AppRoutes.barberDashboard;
-      Navigator.pushReplacementNamed(context, route);
+      // Check if terms were accepted
+      final termosAceitos = await TermosScreen.foiAceito();
+      if (!termosAceitos && mounted) {
+        final accepted = await Navigator.pushNamed(context, AppRoutes.termos);
+        if (accepted != true) {
+          // User declined terms — log out
+          await ctrl.logout();
+          return;
+        }
+      }
+
+      if (mounted) {
+        final session = context.read<SessionManager>();
+        final route = session.isAdmin ? AppRoutes.dashboard : AppRoutes.barberDashboard;
+        Navigator.pushReplacementNamed(context, route);
+      }
     }
   }
 

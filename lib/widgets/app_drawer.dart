@@ -55,11 +55,22 @@ class AppDrawer extends StatelessWidget {
                     _item(context, Icons.star_border, 'Assinaturas', AppRoutes.assinaturas),
                     _item(context, Icons.bar_chart_outlined, 'Relatórios', AppRoutes.relatorios),
                     _item(context, Icons.people_alt_outlined, 'Usuários', AppRoutes.adminUsuarios),
+                    _item(context, Icons.star, 'Avaliações', AppRoutes.avaliacoes),
+                    _item(context, Icons.link, 'Link de Agendamento', AppRoutes.bookingLink),
                   ],
                 ],
               ),
             ),
             const Divider(),
+            _item(context, Icons.notifications_outlined, 'Notificações', AppRoutes.notificationSettings),
+            ListTile(
+              leading: const Icon(Icons.policy_outlined),
+              title: const Text('Termos e Privacidade'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, AppRoutes.termos, arguments: {'viewOnly': true});
+              },
+            ),
             ListTile(
               leading: const Icon(Icons.logout),
               title: const Text('Sair'),

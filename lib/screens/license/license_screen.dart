@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../services/license_service.dart';
 import '../../utils/app_config.dart';
+import '../../utils/app_routes.dart';
 import '../../utils/constants.dart';
 
 class LicenseScreen extends StatefulWidget {
@@ -25,7 +26,7 @@ class _LicenseScreenState extends State<LicenseScreen> {
     try {
       await _svc.activate(_ctrl.text.trim());
       if (mounted) {
-        Navigator.pushReplacementNamed(context, '/login');
+        Navigator.pushReplacementNamed(context, AppRoutes.onboarding);
       }
     } catch (e) {
       setState(() => _error = e.toString().replaceFirst('ValidationException: ', ''));

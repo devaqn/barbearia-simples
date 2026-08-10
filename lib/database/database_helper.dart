@@ -68,6 +68,23 @@ class DatabaseHelper {
     if (oldVersion < 2) {
       await addColumnIfMissing(db, 'usuarios', 'senha_hash', 'TEXT');
     }
+    if (oldVersion < 3) {
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS avaliacoes (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          cliente_id INTEGER REFERENCES clientes(id) ON DELETE SET NULL,
+          barbeiro_id INTEGER NOT NULL REFERENCES usuarios(id),
+          agendamento_id INTEGER REFERENCES agendamentos(id) ON DELETE SET NULL,
+          nota INTEGER NOT NULL,
+          comentario TEXT,
+          barbearia_id TEXT NOT NULL,
+          firebase_id TEXT UNIQUE,
+          criado_em TEXT NOT NULL DEFAULT (datetime('now'))
+        )
+      ''');
+      await db.execute('CREATE INDEX IF NOT EXISTS idx_avaliacoes_barbearia ON avaliacoes(barbearia_id)');
+      await db.execute('CREATE INDEX IF NOT EXISTS idx_avaliacoes_barbeiro ON avaliacoes(barbeiro_id)');
+    }
   }
 
   Future<void> _createSchema(Database db) async {
@@ -281,6 +298,20 @@ class DatabaseHelper {
     ''');
 
     await db.execute('''
+      CREATE TABLE IF NOT EXISTS avaliacoes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        cliente_id INTEGER REFERENCES clientes(id) ON DELETE SET NULL,
+        barbeiro_id INTEGER NOT NULL REFERENCES usuarios(id),
+        agendamento_id INTEGER REFERENCES agendamentos(id) ON DELETE SET NULL,
+        nota INTEGER NOT NULL,
+        comentario TEXT,
+        barbearia_id TEXT NOT NULL,
+        firebase_id TEXT UNIQUE,
+        criado_em TEXT NOT NULL DEFAULT (datetime('now'))
+      )
+    ''');
+
+    await db.execute('''
       CREATE TABLE IF NOT EXISTS assinaturas (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         cliente_id INTEGER NOT NULL REFERENCES clientes(id) ON DELETE CASCADE,
@@ -322,6 +353,8 @@ class DatabaseHelper {
       'CREATE INDEX IF NOT EXISTS idx_comissoes_barbeiro ON comissoes(barbeiro_id, pago)',
       'CREATE INDEX IF NOT EXISTS idx_assinaturas_cliente ON assinaturas(cliente_id)',
       'CREATE INDEX IF NOT EXISTS idx_assinaturas_status ON assinaturas(status, data_vencimento)',
+      'CREATE INDEX IF NOT EXISTS idx_avaliacoes_barbearia ON avaliacoes(barbearia_id)',
+      'CREATE INDEX IF NOT EXISTS idx_avaliacoes_barbeiro ON avaliacoes(barbeiro_id)',
       'CREATE UNIQUE INDEX IF NOT EXISTS idx_caixas_aberto_unique ON caixas(barbeiro_id) WHERE status = \'aberto\'',
     ];
 

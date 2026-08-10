@@ -51,4 +51,24 @@ abstract class AppRoutes {
 
   // Perfil
   static const String perfil = '/perfil';
+
+  // Avaliações
+  static const String avaliacoes = '/avaliacoes';
+
+  // Onboarding
+  static const String onboarding = '/onboarding';
+
+  // Legal
+  static const String termos = '/legal/termos';
+  static const String privacidade = '/legal/privacidade';
+
+  // Configurações
+  static const String notificationSettings = '/settings/notificacoes';
+
+  // Booking (public, no auth)
+  static const String booking = '/booking';
+  static const String bookingConfirmation = '/booking/confirmation';
+
+  // Admin - Booking link
+  static const String bookingLink = '/admin/booking-link';
 }

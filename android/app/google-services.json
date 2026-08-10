@@ -1,26 +1,23 @@
 {
-  "_PLACEHOLDER_": "Replace this file with the real google-services.json from Firebase Console",
-  "_instructions_": [
-    "1. Go to https://console.firebase.google.com",
-    "2. Open your project → Project settings",
-    "3. Under 'Your apps', click the Android app (com.barberos.app)",
-    "4. Download google-services.json",
-    "5. Replace this file with the downloaded one"
-  ],
   "project_info": {
-    "project_number": "000000000000",
-    "project_id": "barberos-placeholder",
-    "storage_bucket": "barberos-placeholder.appspot.com"
+    "project_number": "553196638826",
+    "project_id": "barberos-6fa06",
+    "storage_bucket": "barberos-6fa06.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:000000000000:android:0000000000000000",
+        "mobilesdk_app_id": "1:553196638826:android:b3ce137d8433112966b013",
         "android_client_info": {
-          "package_name": "com.barberos.app.barberos"
+          "package_name": "com.barberos.app"
         }
       },
-      "api_key": [{"current_key": "PLACEHOLDER_API_KEY"}],
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAEjqdIVuK8M6tSmTAnYQ7Nkf3HITzeaTs"
+        }
+      ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": []
